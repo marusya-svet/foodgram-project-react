@@ -52,7 +52,7 @@ class Recipe(models.Model):
     tags = models.ManyToManyField(
         Tag,
         related_name='recipes',
-        verbose_name='Тэг'
+        verbose_name='Тэги'
     )
     ingredients = models.ManyToManyField(
         Ingredient,
@@ -62,7 +62,7 @@ class Recipe(models.Model):
     )
     cooking_time = models.PositiveIntegerField(
         'Время приготовления',
-        validators=MinValueValidator(1)
+        validators=[MinValueValidator(1, message='min time is 1!'),]
     )
 
     class Meta:
@@ -90,7 +90,7 @@ class IngredientInRecipe(models.Model):
     )
     amount = models.PositiveIntegerField(
         'Количество ингредиента',
-        validators=MinValueValidator(1)
+        validators=[MinValueValidator(1)]
     )
 
     class Meta:
@@ -105,14 +105,14 @@ class Favorite(models.Model):
 
     recipe = models.ForeignKey(
         Recipe,
-        related_name='favorite_recipe',
+        related_name='favorites',
         verbose_name='Избранный рецепт',
         on_delete=models.CASCADE
     )
 
     user = models.ForeignKey(
         User,
-        related_name='favorite',
+        related_name='favorites',
         verbose_name='Пользователь',
         on_delete=models.CASCADE
     )
@@ -143,7 +143,7 @@ class ShoppingList(models.Model):
 
     user = models.ForeignKey(
         User,
-        related_name='shopping',
+        related_name='shopping_recipe',
         verbose_name='Пользователь',
         on_delete=models.CASCADE
     )

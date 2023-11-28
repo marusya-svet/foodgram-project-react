@@ -5,9 +5,9 @@ from django.contrib.auth.models import AbstractUser
 class User(AbstractUser):
     """User model"""
 
-    USERNAME_FIELD = 'email'
+    USERNAME_FIELD = 'username'
     REQUIRED_FIELDS = [
-        'login',
+        'email',
         'password',
         'first_name',
         'last_name',
@@ -19,7 +19,6 @@ class User(AbstractUser):
     )
 
     class Meta:
-        ordering = ['id']
         verbose_name = 'Пользователь'
 
     def __str__(self):
