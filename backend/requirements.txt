@@ -2,3 +2,4 @@ Pillow==10.1.0
 Django==3.2
 djangorestframework==3.12.4
 python-dotenv==1.0.0
+djoser==2.2.2

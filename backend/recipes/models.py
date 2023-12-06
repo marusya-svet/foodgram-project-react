@@ -1,6 +1,7 @@
 from django.db import models
 from django.contrib.auth import get_user_model
 from django.core.validators import MinValueValidator
+from django.utils import timezone
 
 User = get_user_model()
 
@@ -62,11 +63,15 @@ class Recipe(models.Model):
     )
     cooking_time = models.PositiveIntegerField(
         'Время приготовления',
-        validators=[MinValueValidator(1, message='min time is 1!'),]
+        validators=[MinValueValidator(1, message='min time is 1!'), ]
+    )
+    pub_date = models.DateTimeField(
+        'Дата публикации',
+        default=timezone.now,
     )
 
     class Meta:
-        ordering = ['id']
+        ordering = ['-pub_date']
         verbose_name = 'Рецепт'
         verbose_name_plural = 'Рецепты'
 

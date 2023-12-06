@@ -7,7 +7,7 @@ SECRET_KEY = 'django-insecure-k%i&b@2_+39n!1!f#%%=7=df4--zp_160638-d_kbke)6756e%
 
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['localhost', '127.0.0.1']
 
 AUTH_USER_MODEL = 'users.User'
 
@@ -18,9 +18,10 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'rest_framework',
+    'api.apps.ApiConfig',
     'users.apps.UsersConfig',
     'recipes.apps.RecipesConfig',
-    'api.apps.ApiConfig',
 ]
 
 MIDDLEWARE = [
