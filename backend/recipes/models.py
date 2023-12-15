@@ -48,7 +48,6 @@ class Recipe(models.Model):
     image = models.ImageField(
         'Фотография блюда',
         upload_to='recipes/',
-        blank=True
     )
     tags = models.ManyToManyField(
         Tag,
