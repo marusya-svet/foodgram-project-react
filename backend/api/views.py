@@ -67,19 +67,38 @@ class RecipeViewSet(viewsets.ModelViewSet):
     @action(detail=True, permission_classes=(IsAuthenticated,))
     def favorite(self, request, pk):
         if request.method == 'GET':
-            return add_obj(Favorite, request.user, pk)
+            return self.add_obj(Favorite, request.user, pk)
         elif request.method == 'DELETE':
-            return delete_obj(Favorite, request.user, pk)
+            return self.delete_obj(Favorite, request.user, pk)
 
     @action(detail=True, permission_classes=(IsAuthenticated,))
     def shopping_list(self, request, pk):
         if request.method == 'GET':
-            return add_obj(ShoppingList, request.user, pk)
+            return self.add_obj(ShoppingList, request.user, pk)
         elif request.method == 'DELETE':
-            return delete_obj(ShoppingList, request.user, pk)
+            return self.delete_obj(ShoppingList, request.user, pk)
 
-    #@action(detail=False, permission_classes=(IsAuthenticated,))
-    #def download_shopping_cart(self, request):
+    @action(detail=False, permission_classes=(IsAuthenticated,))
+    def download_shopping_cart(self, request):
+        shopping_list = {}
+        ingredients = IngredientInRecipe.objects.filter(
+            recipe__list__user=request.user).values_list(
+            'ingredient__name', 'ingredient__measure_unit',
+            'amount'
+        )
+        for ingredient in ingredients:
+            name = ingredient[0]
+            if name not in shopping_list:
+                shopping_list[name] = {
+                    'measure_unit': ingredient[1],
+                    'amount': ingredient[2]
+                }
+            else:
+                shopping_list[name]['amount'] += ingredient[2]
+        response = HttpResponse(open('shopping_list.txt'), content_type='application/txt')
+        response['Content-Disposition'] = 'attachment; filename=shopping_list.txt'
+        response['Content-Type'] = 'application/txt'
+        return response
 
 
 class UsersViewSet(UserViewSet):
