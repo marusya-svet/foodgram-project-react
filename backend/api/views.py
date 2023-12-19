@@ -79,7 +79,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
             return self.delete_obj(ShoppingList, request.user, pk)
 
     @action(detail=False, permission_classes=(IsAuthenticated,))
-    def download_shopping_cart(self, request):
+    def download_shopping_list(self, request):
         shopping_list = {}
         ingredients = IngredientInRecipe.objects.filter(
             recipe__list__user=request.user).values_list(
@@ -105,18 +105,20 @@ class UsersViewSet(UserViewSet):
     """ViewSet for Users"""
 
     pagination_class = CustomPagination
+    serializer_class = UserSerializer
 
     @action(detail=True, permission_classes=(IsAuthenticated,))
-    def follow(self, request, id):
+    def follow(self, request, pk):
         user = request.user
-        author = get_object_or_404(User, id=id)
+        author = get_object_or_404(User, id=pk)
         following = Follow.objects.create(user=user, author=author)
         serializer = FollowSerializer(following, context={'request': request})
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
-    def delete_following(self, request, id):
+    @follow.mapping.delete
+    def delete_following(self, request, pk):
         user = request.user
-        author = get_object_or_404(User, id=id)
+        author = get_object_or_404(User, id=pk)
         follow = Follow.objects.filter(user=user, author=author)
         if follow.exists():
             follow.delete()

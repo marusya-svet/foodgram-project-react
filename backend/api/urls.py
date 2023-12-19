@@ -9,11 +9,12 @@ from api.views import (IngredientViewSet,
 app_name = 'api'
 
 router = DefaultRouter()
-router.register('users', UsersViewSet)
-router.register('tags', TagViewSet)
-router.register('ingredients', IngredientViewSet)
-router.register('recipes', RecipeViewSet)
+router.register('users', UsersViewSet, 'users')
+router.register('tags', TagViewSet, 'tags')
+router.register('ingredients', IngredientViewSet, 'ingredients')
+router.register('recipes', RecipeViewSet, 'recipes')
 
 urlpatterns = [
     path('', include(router.urls)),
+    path('auth/', include('djoser.urls.authtoken')),
 ]
