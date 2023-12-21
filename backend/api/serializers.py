@@ -126,7 +126,9 @@ class RecipeSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError()
         ingredients = data.get('ingredients')
         if not ingredients:
-            raise serializers.ValidationError({'ingredients': 'Need to choose ingredient'})
+            raise serializers.ValidationError(
+                {'ingredients': 'Need to choose ingredient'}
+            )
         if len(ingredients) != len(set(ingredients)):
             raise serializers.ValidationError('ingredients must be unique')
         return data
@@ -142,8 +144,12 @@ class RecipeSerializer(serializers.ModelSerializer):
     def update(self, instance, validated_data):
         instance.image = validated_data.get('image', instance.image)
         instance.name = validated_data.get('name', instance.name)
-        instance.description = validated_data.get('description', instance.description)
-        instance.cooking_time = validated_data.get('cooking_time', instance.cooking_time)
+        instance.description = validated_data.get(
+            'description', instance.description
+        )
+        instance.cooking_time = validated_data.get(
+            'cooking_time', instance.cooking_time
+        )
         instance.tags.clear()
         tags_new = self.initial_data.get('tags')
         instance.tags.set(tags_new)
@@ -211,5 +217,3 @@ class FollowSerializer(UserSerializer):
         if limit:
             queryset = queryset[:int(limit)]
         return ShortRecipeSerializer(queryset, many=True).data
-
-

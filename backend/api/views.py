@@ -1,8 +1,5 @@
-import subscribe as subscribe
 from django.shortcuts import get_object_or_404
-from django.db.models import Sum
 from django.http import HttpResponse
-from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated, AllowAny
@@ -96,8 +93,12 @@ class RecipeViewSet(viewsets.ModelViewSet):
                 }
             else:
                 shopping_list[name]['amount'] += ingredient[2]
-        response = HttpResponse(open('shopping_list.txt'), content_type='application/txt')
-        response['Content-Disposition'] = 'attachment; filename=shopping_list.txt'
+        response = HttpResponse(
+            open('shopping_list.txt'),
+            content_type='application/txt'
+        )
+        response['Content-Disposition'] = 'attachment;' \
+                                          ' filename=shopping_list.txt'
         response['Content-Type'] = 'application/txt'
         return response
 
