@@ -1,32 +1,41 @@
 version: '3.3'
 volumes:
   foodgram_data:
+  static_foodgram:
+  media_foodgram:
 
 services:
   db:
     image: postgres:13.10
     env_file: .env
     volumes:
-      - foodgram_data:/var/lib/postgresql/data
+      - foodgram_data:/var/lib/postgresql/data/
 
   backend:
-    build: ../backend
+    image: mariasvet/foodgram_backend
     env_file: .env
+    restart: unless-stopped
+    volumes:
+      - static_foodgram:/backend_static
+      - media_foodgram:/app/media
     depends_on:
       - db
 
   frontend:
-    build:
-      context: ../frontend
-      dockerfile: Dockerfile
+    image: mariasvet/foodgram_frontend
     volumes:
       - ../frontend/:/app/result_build/
+      - static_foodgram:/frontend_static
 
   nginx:
     image: nginx:1.19.3
     ports:
-      - "80:80"
+      - "8080:80"
     volumes:
       - ./nginx.conf:/etc/nginx/conf.d/default.conf
       - ../frontend/build:/usr/share/nginx/html/
       - ../docs/:/usr/share/nginx/html/api/docs/
+      - static_foodgram:/staticfiles/
+      - media_foodgram:/app/media/
+    depends_on:
+      - backend
