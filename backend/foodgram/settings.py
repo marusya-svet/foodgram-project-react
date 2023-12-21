@@ -7,11 +7,11 @@ load_dotenv()
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-SECRET_KEY = 'django-insecure-k%i&b@2_+39n!1!f#%%=7=df4--zp_160638-d_kbke)6756e%'
+SECRET_KEY = os.getenv('SECRET_KEY', 'svet')
 
-DEBUG = True
+DEBUG = (os.getenv('DEBUG', 'false') == 'true')
 
-ALLOWED_HOSTS = ['localhost', '127.0.0.1', '158.160.6.60', 'foodgram-svet.hopto.org']
+ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', '').split(',')
 
 AUTH_USER_MODEL = 'users.User'
 
