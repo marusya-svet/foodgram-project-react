@@ -22,7 +22,7 @@ class Base64ImageField(serializers.ImageField):
 class UsersSerializer(UserSerializer):
     """Serializer for User model"""
 
-    id_subscribed = serializers.SerializerMethodField(read_only=True)
+    is_subscribed = serializers.SerializerMethodField(read_only=True)
 
     class Meta:
         model = User
@@ -49,21 +49,15 @@ class TagSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Tag
-        fields = '__all__'
+        fields = ['id', 'name', 'color', 'slug']
 
 
 class IngredientInRecipeSerializer(serializers.ModelSerializer):
     """Serializer for IngredientInRecipe model"""
 
-    name = serializers.CharField(
-        source='ingredient.name', read_only=True
-    )
-    id = serializers.PrimaryKeyRelatedField(
-        source='ingredient.id', read_only=True
-    )
-    measure_unit = serializers.CharField(
-        source='ingredient.measure_unit', read_only=True
-    )
+    id = serializers.ReadOnlyField(source='ingredient.id')
+    name = serializers.ReadOnlyField(source='ingredient.name')
+    measure_unit = serializers.ReadOnlyField(source='ingredient.measure_unit')
 
     class Meta:
         model = IngredientInRecipe
@@ -75,7 +69,7 @@ class ShortRecipeSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Recipe
-        fields = ['id', 'name', 'imaage', 'cooking_time']
+        fields = ['id', 'name', 'image', 'cooking_time']
 
 
 class RecipeSerializer(serializers.ModelSerializer):
@@ -124,10 +118,23 @@ class RecipeSerializer(serializers.ModelSerializer):
                 amount=ingredient.get('amount')
             )
 
+    def validate(self, data):
+        tags = data.get('tags')
+        if not tags:
+            raise serializers.ValidationError({'tags': 'Need to choose tag'})
+        if len(tags) != len(set(tags)):
+            raise serializers.ValidationError()
+        ingredients = data.get('ingredients')
+        if not ingredients:
+            raise serializers.ValidationError({'ingredients': 'Need to choose ingredient'})
+        if len(ingredients) != len(set(ingredients)):
+            raise serializers.ValidationError('ingredients must be unique')
+        return data
+
     def create(self, validated_data):
+        recipe = Recipe.objects.create(**validated_data)
         tags = validated_data.pop('tags')
         ingredients = validated_data.pop('ingredients')
-        recipe = Recipe.objects.create(**validated_data)
         recipe.tags.set(tags)
         self.create_ingredients(ingredients, recipe)
         return recipe
