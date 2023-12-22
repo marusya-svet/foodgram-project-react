@@ -1,11 +1,13 @@
 import base64
 from django.core.files.base import ContentFile
-from django.db.models import F
 from rest_framework import serializers
 from djoser.serializers import UserSerializer
 
-from recipes.models import (Recipe, IngredientInRecipe, Ingredient,
-                            Tag, Favorite, ShoppingList)
+from recipes.models import (
+    Recipe,
+    IngredientInRecipe,
+    Ingredient,
+    Tag)
 from users.models import User, Follow
 
 MIN_INGREDIENT_AMOUNT = 1
@@ -161,7 +163,9 @@ class RecipeSerializer(serializers.ModelSerializer):
         tags_new = self.initial_data.get('tags')
         instance.tags.set(tags_new)
         instance.ingredients.clear()
-        self.create_ingredients_amount(validated_data.get('ingredients'), instance)
+        self.create_ingredients_amount(
+            validated_data.get('ingredients'),
+            instance)
         instance.save()
         return instance
 
