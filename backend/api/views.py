@@ -97,7 +97,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
             content_type='application/txt'
         )
         response['Content-Disposition'] = (
-            f'attachment; filename=shopping_list.txt'
+            'attachment; filename=shopping_list.txt'
         )
         response['Content-Type'] = 'application/txt'
         return response
