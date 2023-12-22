@@ -1,15 +1,18 @@
 # FOODGRAM_PROJECT
 Social network for bloggers and cooks!
+Here you can post your recipes, follow other cooks, add recipes to the favorites list and to shopping list.
+From the shopping list you can download the list of necessary groceries 
 
 ### Tecnologies
 - Python 3.7
 - Django 3.2
 - Nginx
 - Django REST framework 3.12.4
+- Docker
 
 ### Run project in dev
 - Install and activate virtual environment
-- Create env-file ang fill in it like this:
+- Create env-file in backend and infra directories and fill it in like this:
 ```
 POSTGRES_USER=django_user
 POSTGRES_PASSWORD=(yourpassword)
@@ -20,10 +23,25 @@ SECRET_KEY=(your secret key)
 DEBUG=False
 ALLOWED_HOSTS=(your hosts)
 ``` 
-- Run docker compose
+- Create superuser in backend directory 
 ```
-docker compose up
+python manage.py createsuperuser
 ``` 
+- Download Docker Compose:
+```
+sudo apt update
+sudo apt-get install docker-compose-plugin 
+``` 
+- Copy docker-compose.yml file to your server and run docker compose on your server 
+```
+sudo docker compose up -d
+``` 
+
+
+## Примеры запросов API
+
+Add recipe: POST `api/recipes/`
+View recipe: GET `api/recipes/{recipe_id}`
 
 ### Author
 *Maria Svetlichnaya*

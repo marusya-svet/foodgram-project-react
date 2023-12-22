@@ -9,7 +9,6 @@ from djoser.views import UserViewSet
 from recipes.models import (Recipe, IngredientInRecipe, Ingredient,
                             Tag, Favorite, ShoppingList)
 from users.models import User, Follow
-
 from .pagination import CustomPagination
 from .permissions import IsAuthorOrReadOnly, IsAdminOrReadOnly
 from .serializers import (TagSerializer, IngredientSerializer,
@@ -66,14 +65,14 @@ class RecipeViewSet(viewsets.ModelViewSet):
     def favorite(self, request, pk):
         if request.method == 'GET':
             return self.add_obj(Favorite, request.user, pk)
-        elif request.method == 'DELETE':
+        if request.method == 'DELETE':
             return self.delete_obj(Favorite, request.user, pk)
 
     @action(detail=True, permission_classes=(IsAuthenticated,))
     def shopping_list(self, request, pk):
         if request.method == 'GET':
             return self.add_obj(ShoppingList, request.user, pk)
-        elif request.method == 'DELETE':
+        if request.method == 'DELETE':
             return self.delete_obj(ShoppingList, request.user, pk)
 
     @action(detail=False, permission_classes=(IsAuthenticated,))
@@ -97,8 +96,8 @@ class RecipeViewSet(viewsets.ModelViewSet):
             open('shopping_list.txt'),
             content_type='application/txt'
         )
-        response['Content-Disposition'] = 'attachment;' \
-                                          ' filename=shopping_list.txt'
+        response['Content-Disposition'] = ('attachment;' 
+                                           ' filename=shopping_list.txt')
         response['Content-Type'] = 'application/txt'
         return response
 
@@ -119,9 +118,7 @@ class UsersViewSet(UserViewSet):
 
     @follow.mapping.delete
     def delete_following(self, request, pk):
-        user = request.user
-        author = get_object_or_404(User, id=pk)
-        follow = Follow.objects.filter(user=user, author=author)
+        follow = Follow.objects.filter(author__id=pk)
         if follow.exists():
             follow.delete()
             return Response(status=status.HTTP_204_NO_CONTENT)
@@ -133,7 +130,7 @@ class UsersViewSet(UserViewSet):
     @action(detail=False, permission_classes=(IsAuthenticated,))
     def show_followings(self, request):
         user = request.user
-        queryset = Follow.objects.filter(user=user)
+        queryset = User.objects.filter(following__user=user)
         pages = self.paginate_queryset(queryset)
         serializer = FollowSerializer(
             pages,

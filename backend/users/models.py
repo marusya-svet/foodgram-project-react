@@ -31,6 +31,7 @@ class User(AbstractUser):
 
     class Meta:
         verbose_name = 'Пользователь'
+        ordering = ('username',)
 
     def __str__(self):
         return self.username
@@ -51,9 +52,13 @@ class Follow(models.Model):
     )
 
     class Meta:
+        ordering = ('-id',)
         models.constraints = [
             models.UniqueConstraint(
                 fields=['user', 'author'],
                 name='user_following_author'
             )
         ]
+
+    def __str__(self):
+        return f'{self.user.username} follows {self.author.username}'

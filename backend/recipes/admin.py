@@ -1,6 +1,18 @@
 from django.contrib import admin
-from .models import (Ingredient, Tag, Recipe,
-                     ShoppingList, Favorite, IngredientInRecipe)
+from django.contrib.admin import TabularInline
+from .models import (
+    Ingredient,
+    Tag,
+    Recipe,
+    ShoppingList,
+    Favorite,
+    IngredientInRecipe
+)
+
+
+class RecipeIngredientInline(TabularInline):
+    model = IngredientInRecipe
+    min_num = 1
 
 
 @admin.register(Ingredient)
@@ -24,6 +36,7 @@ class RecipeAdmin(admin.ModelAdmin):
         'name',
         'tags'
     )
+    inlines = (RecipeIngredientInline, )
 
     @admin.display(empty_value=0)
     def in_favorite(self, obj):
