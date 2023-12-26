@@ -33,7 +33,7 @@ services:
     image: nginx:1.19.3
     env_file: .env
     ports:
-      - 80:80
+      - 8001:80
     volumes:
       - static_foodgram:/staticfiles/
       - media_foodgram:/app/media/
