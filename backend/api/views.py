@@ -107,7 +107,6 @@ class UsersViewSet(UserViewSet):
     """ViewSet for Users"""
 
     pagination_class = CustomPagination
-    serializer_class = UserSerializer
 
     @action(detail=True, permission_classes=(IsAuthenticated,))
     def follow(self, request, pk):

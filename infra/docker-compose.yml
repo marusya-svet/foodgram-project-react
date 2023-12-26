@@ -1,4 +1,4 @@
-version: '3.3'
+version: '3'
 volumes:
   foodgram_data:
   static_foodgram:
@@ -23,15 +23,17 @@ services:
 
   frontend:
     image: mariasvet/foodgram_frontend
+    env_file: .env
+    command: cp -r /app/build/. /static/
     volumes:
       - ../frontend/:/app/result_build/
       - static_foodgram:/frontend_static
 
-  nginx:
-    image: mariasvet/foodgram_gateway
+  gateway:
+    image: nginx:1.19.3
     env_file: .env
     ports:
-      - "8080:80"
+      - 80:80
     volumes:
       - static_foodgram:/staticfiles/
       - media_foodgram:/app/media/

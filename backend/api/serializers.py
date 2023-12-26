@@ -68,8 +68,8 @@ class IngredientInRecipeSerializer(serializers.ModelSerializer):
     name = serializers.ReadOnlyField(source='ingredient.name')
     measure_unit = serializers.ReadOnlyField(source='ingredient.measure_unit')
     amount = serializers.IntegerField(
-        min_length=MIN_INGREDIENT_AMOUNT,
-        max_length=MAX_INGREDIENT_AMOUNT,
+        min_value=MIN_INGREDIENT_AMOUNT,
+        max_value=MAX_INGREDIENT_AMOUNT,
     )
 
     class Meta:
@@ -95,8 +95,8 @@ class RecipeSerializer(serializers.ModelSerializer):
     is_in_favorites = serializers.SerializerMethodField()
     is_in_shopping_list = serializers.SerializerMethodField()
     cooking_time = serializers.IntegerField(
-        min_length=MIN_COOKING_TIME,
-        max_length=MAX_COOKING_TIME,
+        min_value=MIN_COOKING_TIME,
+        max_value=MAX_COOKING_TIME,
     )
 
     class Meta:

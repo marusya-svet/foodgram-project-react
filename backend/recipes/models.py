@@ -19,7 +19,7 @@ class Ingredient(models.Model):
 
     class Meta:
         verbose_name = 'Ингредиент'
-        ordering = ['name']
+        ordering = ['id']
 
     def __str__(self):
         return self.name
@@ -34,7 +34,7 @@ class Tag(models.Model):
 
     class Meta:
         verbose_name = 'Тег'
-        ordering = ('name',)
+        ordering = ['id']
 
     def __str__(self):
         return self.name
@@ -119,7 +119,7 @@ class IngredientInRecipe(models.Model):
 
     class Meta:
         verbose_name = 'Ингредиент в рецепте'
-        ordering = ('recipe',)
+        ordering = ['id']
 
     def __str__(self):
         return self.ingredient.name
@@ -145,7 +145,7 @@ class Favorite(models.Model):
     class Meta:
         verbose_name = 'Избраннный рецепт'
         verbose_name_plural = 'Избранные рецепты'
-        ordering = ('recipe',)
+        ordering = ['id']
         models.constraints = [
             models.UniqueConstraint(
                 fields=['recipe', 'user'],
@@ -177,7 +177,7 @@ class ShoppingList(models.Model):
     class Meta:
         verbose_name = 'Рецепт в листе покупок'
         verbose_name_plural = 'Рецепты в листе покупок'
-        orgering = ('recipe',)
+        ordering = ['id']
         models.constraints = [
             models.UniqueConstraint(
                 fields=['recipe', 'user'],
@@ -186,4 +186,4 @@ class ShoppingList(models.Model):
         ]
 
     def __str__(self):
-        return f"{self.recipe} is in {self.user}'s shopping list"
+        return f"{self.recipe} is in {self.user}s shopping list"
