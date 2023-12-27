@@ -12,8 +12,8 @@ from users.models import User, Follow
 from .pagination import CustomPagination
 from .permissions import IsAuthorOrReadOnly, IsAdminOrReadOnly
 from .serializers import (TagSerializer, IngredientSerializer,
-                          RecipeSerializer, UserSerializer,
-                          FollowSerializer, ShortRecipeSerializer,)
+                          RecipeSerializer, FollowSerializer,
+                          ShortRecipeSerializer,)
 
 
 class TagViewSet(viewsets.ReadOnlyModelViewSet):
