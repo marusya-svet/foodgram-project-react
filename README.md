@@ -37,6 +37,7 @@ sudo apt-get install docker-compose-plugin
 sudo docker compose up -d
 ``` 
 
+## https://foodgram-svet.ddns.net/
 
 ## Примеры запросов API
 
