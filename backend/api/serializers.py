@@ -1,6 +1,7 @@
 import base64
 
 from django.core.files.base import ContentFile
+from django.contrib.auth import get_user_model
 from rest_framework import serializers
 from djoser.serializers import UserSerializer
 
@@ -9,12 +10,14 @@ from recipes.models import (
     IngredientInRecipe,
     Ingredient,
     Tag)
-from users.models import User, Follow
+from users.models import Follow
 
 MIN_INGREDIENT_AMOUNT = 1
 MAX_INGREDIENT_AMOUNT = 32000
 MIN_COOKING_TIME = 1
 MAX_COOKING_TIME = 3200
+
+User = get_user_model()
 
 
 class Base64ImageField(serializers.ImageField):
@@ -28,7 +31,7 @@ class Base64ImageField(serializers.ImageField):
         return super().to_internal_value(data)
 
 
-class UsersSerializer(UserSerializer):
+class UsersSerializer(serializers.ModelSerializer):
     """Serializer for User model"""
 
     is_subscribed = serializers.SerializerMethodField(read_only=True)
@@ -36,11 +39,11 @@ class UsersSerializer(UserSerializer):
     class Meta:
         model = User
         fields = ['id', 'email', 'username', 'first_name',
-                  'last_name', 'is_subscribed']
+                  'last_name', 'is_subscribed', 'password']
 
     def get_is_subscribed(self, obj):
         user = self.context.get('user')
-        if user.is_anonymous:
+        if user.is_anonymous or (user == obj):
             return False
         return user.following.exists()
 
@@ -193,7 +196,7 @@ class AddIngredientSerializer(serializers.ModelSerializer):
         fields = ['id', 'amount']
 
 
-class FollowSerializer(UserSerializer):
+class FollowSerializer(serializers.ModelSerializer):
     """Serializer for adding or deleting subscription.
     And for showing the following list"""
 
@@ -207,7 +210,7 @@ class FollowSerializer(UserSerializer):
         slug_field='username',
         read_only=False
     )
-    recipes = RecipeSerializer(many=True, read_only=True)
+    recipes = ShortRecipeSerializer(many=True, read_only=True)
     count_recipes = serializers.SerializerMethodField(read_only=True)
     is_subscribed = serializers.SerializerMethodField()
 

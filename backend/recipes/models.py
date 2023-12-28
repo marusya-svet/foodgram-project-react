@@ -2,6 +2,7 @@ from django.db import models
 from django.contrib.auth import get_user_model
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.utils import timezone
+from PIL import Image
 
 User = get_user_model()
 
@@ -48,8 +49,9 @@ class Recipe(models.Model):
     author = models.ForeignKey(
         User,
         related_name='recipes',
-        on_delete=models.CASCADE,
-        verbose_name='Автор'
+        on_delete=models.SET_NULL,
+        verbose_name='Автор',
+        null=True
     )
     image = models.ImageField(
         'Фотография блюда',
@@ -79,6 +81,7 @@ class Recipe(models.Model):
     )
     pub_date = models.DateTimeField(
         'Дата публикации',
+        editable=False,
         default=timezone.now,
     )
 
@@ -90,6 +93,9 @@ class Recipe(models.Model):
     def __str__(self):
         return self.name
 
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+
 
 class IngredientInRecipe(models.Model):
     """Ingredient in recipe model"""
@@ -97,16 +103,18 @@ class IngredientInRecipe(models.Model):
     recipe = models.ForeignKey(
         Recipe,
         on_delete=models.CASCADE,
-        related_name='ingredient_in_recipe',
+        related_name='ingredient',
         verbose_name='Рецепт'
     )
     ingredient = models.ForeignKey(
         Ingredient,
         on_delete=models.CASCADE,
-        verbose_name='Ингредиент'
+        verbose_name='Ингредиент',
+        related_name='recipe'
     )
     amount = models.PositiveSmallIntegerField(
         verbose_name='Количество ингредиента',
+        default=0,
         validators=(
             MinValueValidator(
                 MIN_INGREDIENT_AMOUNT, message='min amount is 1!'
@@ -169,7 +177,7 @@ class ShoppingList(models.Model):
 
     user = models.ForeignKey(
         User,
-        related_name='shopping_recipe',
+        related_name='shopping',
         verbose_name='Пользователь',
         on_delete=models.CASCADE
     )

@@ -5,14 +5,13 @@ from django.contrib.auth.models import AbstractUser
 class User(AbstractUser):
     """User model"""
 
-    USERNAME_FIELD = 'email'
-    REQUIRED_FIELDS = ['username', 'first_name', 'last_name']
     email = models.EmailField(
         'email',
         max_length=254,
         unique=True
     )
     username = models.CharField(
+        verbose_name='unique username',
         max_length=150,
         unique=True,
     )
@@ -41,14 +40,14 @@ class Follow(models.Model):
     """Follow model"""
 
     user = models.ForeignKey(
-        User,
+        to=User,
         related_name='follower',
         on_delete=models.CASCADE
     )
     author = models.ForeignKey(
-        User,
+        to=User,
         related_name='following',
-        on_delete=models.CASCADE
+        on_delete=models.CASCADE,
     )
 
     class Meta:

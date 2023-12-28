@@ -2,7 +2,9 @@ from django.shortcuts import get_object_or_404
 from django.http import HttpResponse
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
-from rest_framework.permissions import IsAuthenticated, AllowAny
+from rest_framework.permissions import (IsAuthenticated,
+                                        AllowAny,
+                                        DjangoModelPermissions)
 from rest_framework.response import Response
 from djoser.views import UserViewSet
 
@@ -10,7 +12,7 @@ from recipes.models import (Recipe, IngredientInRecipe, Ingredient,
                             Tag, Favorite, ShoppingList)
 from users.models import User, Follow
 from .pagination import CustomPagination
-from .permissions import IsAuthorOrReadOnly, IsAdminOrReadOnly
+from .permissions import IsAuthorOrReadOnly, IsAdminOrReadOnly, AuthorStaffOrReadOnly
 from .serializers import (TagSerializer, IngredientSerializer,
                           RecipeSerializer, FollowSerializer,
                           ShortRecipeSerializer,)
@@ -27,7 +29,7 @@ class TagViewSet(viewsets.ReadOnlyModelViewSet):
 class IngredientViewSet(viewsets.ReadOnlyModelViewSet):
     """ViewSet for Ingredients"""
 
-    permission_classes = (AllowAny,)
+    permission_classes = (IsAdminOrReadOnly,)
     queryset = Ingredient.objects.all()
     serializer_class = IngredientSerializer
     pagination_class = None
@@ -37,10 +39,11 @@ class IngredientViewSet(viewsets.ReadOnlyModelViewSet):
 class RecipeViewSet(viewsets.ModelViewSet):
     """ViewSet for Recipes"""
 
-    permission_classes = (IsAuthorOrReadOnly,)
-    queryset = Recipe.objects.all()
+    permission_classes = (AuthorStaffOrReadOnly,)
+    queryset = Recipe.objects.select_related('author')
     serializer_class = RecipeSerializer
     pagination_class = CustomPagination
+    add_serializer = ShortRecipeSerializer
 
     def perform_create(self, serializer):
         serializer.save(author=self.request.user)
@@ -107,6 +110,9 @@ class UsersViewSet(UserViewSet):
     """ViewSet for Users"""
 
     pagination_class = CustomPagination
+    permission_classes = (DjangoModelPermissions,)
+    add_serializer = FollowSerializer
+    link_model = Follow
 
     @action(detail=True, permission_classes=(IsAuthenticated,))
     def follow(self, request, pk):

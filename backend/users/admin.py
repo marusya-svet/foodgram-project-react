@@ -17,6 +17,7 @@ class UserAdmin(admin.ModelAdmin):
         'username',
     )
     list_editable = ('password',)
+    search_fields = ('username', 'email')
 
 
 @admin.register(Follow)
