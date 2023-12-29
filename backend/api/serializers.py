@@ -1,7 +1,6 @@
 import base64
 
 from django.core.files.base import ContentFile
-from django.db.transaction import atomic
 from django.contrib.auth import get_user_model
 from rest_framework import serializers
 
@@ -131,7 +130,9 @@ class RecipeReadSerializer(serializers.ModelSerializer):
         request = self.context.get('request')
         if request.user.is_anonymous:
             return False
-        return Recipe.objects.filter(shopping_recipe__user=request.user, id=obj.id)
+        return Recipe.objects.filter(
+            shopping_recipe__user=request.user, id=obj.id
+        )
 
 
 class RecipeCreateSerializer(serializers.ModelSerializer):
