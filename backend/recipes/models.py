@@ -29,9 +29,17 @@ class Ingredient(models.Model):
 class Tag(models.Model):
     """Tag model"""
 
-    name = models.CharField('Название', unique=True, max_length=200)
-    color_hex = models.CharField('HEX-код цвета', unique=True, max_length=7)
-    slug = models.SlugField('Уникальный слаг', unique=True, max_length=200)
+    name = models.CharField('Название',
+                            unique=True,
+                            max_length=200,)
+    color_hex = models.CharField('HEX-код цвета',
+                                 unique=True,
+                                 max_length=7,
+                                 db_index=False)
+    slug = models.SlugField('Уникальный слаг',
+                            unique=True,
+                            max_length=200,
+                            db_index=False)
 
     class Meta:
         verbose_name = 'Тег'

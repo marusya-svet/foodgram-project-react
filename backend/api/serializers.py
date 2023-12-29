@@ -1,9 +1,10 @@
 import base64
 
 from django.core.files.base import ContentFile
+from django.db.models import F
+from django.db.transaction import atomic
 from django.contrib.auth import get_user_model
 from rest_framework import serializers
-from djoser.serializers import UserSerializer
 
 from recipes.models import (
     Recipe,
@@ -31,7 +32,7 @@ class Base64ImageField(serializers.ImageField):
         return super().to_internal_value(data)
 
 
-class UsersSerializer(serializers.ModelSerializer):
+class UserSerializer(serializers.ModelSerializer):
     """Serializer for User model"""
 
     is_subscribed = serializers.SerializerMethodField(read_only=True)
@@ -42,7 +43,7 @@ class UsersSerializer(serializers.ModelSerializer):
                   'last_name', 'is_subscribed', 'password']
 
     def get_is_subscribed(self, obj):
-        user = self.context.get('user')
+        user = self.context.get('request').user
         if user.is_anonymous or (user == obj):
             return False
         return user.following.exists()
@@ -72,7 +73,7 @@ class TagSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Tag
-        fields = ['id', 'name', 'color', 'slug']
+        fields = ['id', 'name', 'color_hex', 'slug']
 
 
 class IngredientInRecipeSerializer(serializers.ModelSerializer):
@@ -102,10 +103,11 @@ class ShortRecipeSerializer(serializers.ModelSerializer):
 class RecipeSerializer(serializers.ModelSerializer):
     """Serializer for Recipe model"""
 
-    author = UsersSerializer(read_only=True)
-    tags = TagSerializer(read_only=True)
-    ingredients = IngredientInRecipeSerializer()
-    image = Base64ImageField()
+    author = UserSerializer(read_only=True)
+    tags = serializers.PrimaryKeyRelatedField(many=True,
+                                              queryset=Tag.objects.all())
+    ingredients = IngredientInRecipeSerializer(many=True)
+    image = Base64ImageField(required=False, allow_null=True)
     is_in_favorites = serializers.SerializerMethodField()
     is_in_shopping_list = serializers.SerializerMethodField()
     cooking_time = serializers.IntegerField(
@@ -121,6 +123,12 @@ class RecipeSerializer(serializers.ModelSerializer):
                   'ingredients', 'is_in_favorites',
                   'is_in_shopping_list']
 
+    def get_ingredients(self, recipe):
+        ingredients = recipe.ingredients.values(
+            'id', 'name', 'measure_unit', amount=F('recipe__amount')
+        )
+        return ingredients
+
     def get_is_in_favorites(self, obj):
         user = self.context.get('user')
         if user.is_anonymous:
@@ -133,14 +141,18 @@ class RecipeSerializer(serializers.ModelSerializer):
             return False
         return Recipe.objects.filter(list__user=user, id=obj.id)
 
-    def create_ingredients_amount(self, ingredients, recipe):
-        IngredientInRecipe.objects.bulk_create(
-            [IngredientInRecipe(
-                ingredient=Ingredient.objects.get(id=ingredient['id']),
-                recipe=recipe,
-                amount=ingredient['amount']
-            ) for ingredient in ingredients]
-        )
+    @staticmethod
+    def create_ingredients_amount(recipe, ingredients):
+        obj = []
+        for ingredient in ingredients:
+            obj.append(
+                IngredientInRecipe(
+                    ingredient=ingredient.pop('id'),
+                    amount=ingredient.pop('amount'),
+                    recipe=recipe,
+                )
+            )
+        IngredientInRecipe.objects.bulk_create(obj)
 
     def validate(self, data):
         tags = data.get('tags')
@@ -153,18 +165,18 @@ class RecipeSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError(
                 {'ingredients': 'Need to choose ingredient'}
             )
-        if len(ingredients) != len(set(ingredients)):
-            raise serializers.ValidationError('ingredients must be unique')
         return data
 
+    @atomic
     def create(self, validated_data):
-        recipe = Recipe.objects.create(**validated_data)
         tags = validated_data.pop('tags')
         ingredients = validated_data.pop('ingredients')
+        recipe = Recipe.objects.create(**validated_data)
         recipe.tags.set(tags)
-        self.create_ingredients(ingredients, recipe)
+        self.create_ingredients_amount(recipe, ingredients)
         return recipe
 
+    @atomic
     def update(self, instance, validated_data):
         instance.image = validated_data.get('image', instance.image)
         instance.name = validated_data.get('name', instance.name)
@@ -185,18 +197,7 @@ class RecipeSerializer(serializers.ModelSerializer):
         return instance
 
 
-class AddIngredientSerializer(serializers.ModelSerializer):
-    """Serializer for adding ingredient in recipe"""
-
-    id = serializers.IntegerField()
-    amount = serializers.IntegerField()
-
-    class Meta:
-        model = IngredientInRecipe
-        fields = ['id', 'amount']
-
-
-class FollowSerializer(serializers.ModelSerializer):
+class FollowSerializer(UserSerializer):
     """Serializer for adding or deleting subscription.
     And for showing the following list"""
 

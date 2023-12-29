@@ -3,7 +3,6 @@ from django.http import HttpResponse
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.permissions import (IsAuthenticated,
-                                        AllowAny,
                                         DjangoModelPermissions)
 from rest_framework.response import Response
 from djoser.views import UserViewSet
@@ -12,10 +11,10 @@ from recipes.models import (Recipe, IngredientInRecipe, Ingredient,
                             Tag, Favorite, ShoppingList)
 from users.models import User, Follow
 from .pagination import CustomPagination
-from .permissions import IsAuthorOrReadOnly, IsAdminOrReadOnly, AuthorStaffOrReadOnly
+from .permissions import IsAdminOrReadOnly, AuthorStaffOrReadOnly
 from .serializers import (TagSerializer, IngredientSerializer,
                           RecipeSerializer, FollowSerializer,
-                          ShortRecipeSerializer,)
+                          ShortRecipeSerializer, UserSerializer)
 
 
 class TagViewSet(viewsets.ReadOnlyModelViewSet):
@@ -40,7 +39,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
     """ViewSet for Recipes"""
 
     permission_classes = (AuthorStaffOrReadOnly,)
-    queryset = Recipe.objects.select_related('author')
+    queryset = Recipe.objects.all()
     serializer_class = RecipeSerializer
     pagination_class = CustomPagination
     add_serializer = ShortRecipeSerializer
@@ -112,6 +111,7 @@ class UsersViewSet(UserViewSet):
     pagination_class = CustomPagination
     permission_classes = (DjangoModelPermissions,)
     add_serializer = FollowSerializer
+    serializer_class = UserSerializer
     link_model = Follow
 
     @action(detail=True, permission_classes=(IsAuthenticated,))

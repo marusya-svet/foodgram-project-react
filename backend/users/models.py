@@ -5,27 +5,13 @@ from django.contrib.auth.models import AbstractUser
 class User(AbstractUser):
     """User model"""
 
+    USERNAME_FIELD = 'email'
+    REQUIRED_FIELDS = ('username', 'first_name', 'last_name')
+
     email = models.EmailField(
         'email',
         max_length=254,
         unique=True
-    )
-    username = models.CharField(
-        verbose_name='unique username',
-        max_length=150,
-        unique=True,
-    )
-    first_name = models.CharField(
-        'first_name',
-        max_length=150,
-    )
-    last_name = models.CharField(
-        'last_name',
-        max_length=150
-    )
-    password = models.CharField(
-        'password',
-        max_length=150
     )
 
     class Meta:
