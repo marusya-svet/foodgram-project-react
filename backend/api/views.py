@@ -13,8 +13,9 @@ from users.models import User, Follow
 from .pagination import CustomPagination
 from .permissions import IsAdminOrReadOnly, AuthorStaffOrReadOnly
 from .serializers import (TagSerializer, IngredientSerializer,
-                          RecipeSerializer, FollowSerializer,
-                          ShortRecipeSerializer, UserSerializer)
+                          RecipeReadSerializer, FollowSerializer,
+                          ShortRecipeSerializer, UserSerializer,
+                          RecipeCreateSerializer)
 
 
 class TagViewSet(viewsets.ReadOnlyModelViewSet):
@@ -40,12 +41,14 @@ class RecipeViewSet(viewsets.ModelViewSet):
 
     permission_classes = (AuthorStaffOrReadOnly,)
     queryset = Recipe.objects.all()
-    serializer_class = RecipeSerializer
+    serializer_class = RecipeCreateSerializer
     pagination_class = CustomPagination
     add_serializer = ShortRecipeSerializer
 
-    def perform_create(self, serializer):
-        serializer.save(author=self.request.user)
+    def get_serializer_class(self):
+        if self.request.method == 'GET':
+            return RecipeReadSerializer
+        return RecipeCreateSerializer
 
     def add_obj(self, model: object, user, pk):
         if model.objects.filter(user=user, recipe__id=pk).exists:

@@ -53,7 +53,7 @@ class Recipe(models.Model):
     """Recipe model"""
 
     name = models.CharField('Название рецепта', max_length=200)
-    description = models.TextField('Опиисание')
+    text = models.TextField('Опиисание')
     author = models.ForeignKey(
         User,
         related_name='recipes',
@@ -111,14 +111,13 @@ class IngredientInRecipe(models.Model):
     recipe = models.ForeignKey(
         Recipe,
         on_delete=models.CASCADE,
-        related_name='ingredient',
+        related_name='ingredienttorecipe',
         verbose_name='Рецепт'
     )
     ingredient = models.ForeignKey(
         Ingredient,
         on_delete=models.CASCADE,
         verbose_name='Ингредиент',
-        related_name='recipe'
     )
     amount = models.PositiveSmallIntegerField(
         verbose_name='Количество ингредиента',
