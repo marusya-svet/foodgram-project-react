@@ -1,21 +1,25 @@
 from django.shortcuts import get_object_or_404
 from django.http import HttpResponse
+from django.contrib.auth import get_user_model
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.permissions import (IsAuthenticated,
-                                        DjangoModelPermissions)
+                                        SAFE_METHODS,
+                                        )
 from rest_framework.response import Response
 from djoser.views import UserViewSet
 
 from recipes.models import (Recipe, IngredientInRecipe, Ingredient,
                             Tag, Favorite, ShoppingList)
-from users.models import User, Follow
+from users.models import Follow
 from .pagination import CustomPagination
-from .permissions import IsAdminOrReadOnly, AuthorStaffOrReadOnly
+from .permissions import IsAdminOrReadOnly, IsAuthorOrReadOnly
 from .serializers import (TagSerializer, IngredientSerializer,
                           RecipeReadSerializer, FollowSerializer,
-                          ShortRecipeSerializer, UserSerializer,
-                          RecipeCreateSerializer)
+                          ShortRecipeSerializer, RecipeCreateSerializer,
+                          )
+
+User = get_user_model()
 
 
 class TagViewSet(viewsets.ReadOnlyModelViewSet):
@@ -39,14 +43,15 @@ class IngredientViewSet(viewsets.ReadOnlyModelViewSet):
 class RecipeViewSet(viewsets.ModelViewSet):
     """ViewSet for Recipes"""
 
-    permission_classes = (AuthorStaffOrReadOnly,)
+    permission_classes = (IsAuthorOrReadOnly,)
     queryset = Recipe.objects.all()
-    serializer_class = RecipeCreateSerializer
     pagination_class = CustomPagination
-    add_serializer = ShortRecipeSerializer
+
+    def perform_create(self, serializer):
+        serializer.save(author=self.request.user)
 
     def get_serializer_class(self):
-        if self.request.method == 'GET':
+        if self.request.method in SAFE_METHODS:
             return RecipeReadSerializer
         return RecipeCreateSerializer
 
@@ -66,18 +71,24 @@ class RecipeViewSet(viewsets.ModelViewSet):
             obj.delete()
             return Response(status=status.HTTP_204_NO_CONTENT)
 
-    @action(detail=True, permission_classes=(IsAuthenticated,))
+    @action(
+        detail=True,
+        methods=['post', 'delete'],
+        permission_classes=(IsAuthenticated,))
     def favorite(self, request, pk):
-        if request.method == 'GET':
+        if request.method == 'POST':
             return self.add_obj(Favorite, request.user, pk)
-        if request.method == 'DELETE':
+        else:
             return self.delete_obj(Favorite, request.user, pk)
 
-    @action(detail=True, permission_classes=(IsAuthenticated,))
+    @action(
+        detail=True,
+        methods=['post', 'delete'],
+        permission_classes=(IsAuthenticated,))
     def shopping_list(self, request, pk):
-        if request.method == 'GET':
+        if request.method == 'POST':
             return self.add_obj(ShoppingList, request.user, pk)
-        if request.method == 'DELETE':
+        else:
             return self.delete_obj(ShoppingList, request.user, pk)
 
     @action(detail=False, permission_classes=(IsAuthenticated,))
@@ -108,26 +119,26 @@ class RecipeViewSet(viewsets.ModelViewSet):
         return response
 
 
-class UsersViewSet(UserViewSet):
+class CustomUserViewSet(UserViewSet):
     """ViewSet for Users"""
 
     pagination_class = CustomPagination
-    permission_classes = (DjangoModelPermissions,)
-    add_serializer = FollowSerializer
-    serializer_class = UserSerializer
-    link_model = Follow
 
-    @action(detail=True, permission_classes=(IsAuthenticated,))
+    @action(detail=True,
+            permission_classes=(IsAuthenticated,))
     def follow(self, request, pk):
         user = request.user
         author = get_object_or_404(User, id=pk)
+
         following = Follow.objects.create(user=user, author=author)
         serializer = FollowSerializer(following, context={'request': request})
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
     @follow.mapping.delete
     def delete_following(self, request, pk):
-        follow = Follow.objects.filter(author__id=pk)
+        user = request.user
+        author = get_object_or_404(User, id=pk)
+        follow = Follow.objects.filter(user=user, author=author)
         if follow.exists():
             follow.delete()
             return Response(status=status.HTTP_204_NO_CONTENT)
@@ -139,7 +150,7 @@ class UsersViewSet(UserViewSet):
     @action(detail=False, permission_classes=(IsAuthenticated,))
     def show_followings(self, request):
         user = request.user
-        queryset = User.objects.filter(following__user=user)
+        queryset = User.objects.filter(user=user)
         pages = self.paginate_queryset(queryset)
         serializer = FollowSerializer(
             pages,

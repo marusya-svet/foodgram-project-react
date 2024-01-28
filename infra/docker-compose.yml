@@ -17,7 +17,7 @@ services:
     restart: unless-stopped
     volumes:
       - static_foodgram:/backend_static
-      - media_foodgram:/app/media/
+      - media_foodgram:/app/media
     depends_on:
       - db_f
 
@@ -33,13 +33,13 @@ services:
     image: nginx:1.19.3
     env_file: .env
     ports:
-      - 8080:80
+      - 7000:80
     volumes:
       - ../frontend/build:/usr/share/nginx/html/
       - ../docs/:/usr/share/nginx/html/api/docs
       - ./nginx.conf:/etc/nginx/templates/default.conf.template
       - static_foodgram:/staticfiles/
-      - media_foodgram:/app/media/
+      - media_foodgram:/media/
     depends_on:
       - backend
       - frontend
