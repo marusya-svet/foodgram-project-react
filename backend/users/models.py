@@ -21,17 +21,17 @@ class User(AbstractUser):
         return self.username
 
 
-class Follow(models.Model):
+class Subscribe(models.Model):
     """Follow model"""
 
     user = models.ForeignKey(
         to=User,
-        related_name='follower',
+        related_name='subscriber',
         on_delete=models.CASCADE
     )
     author = models.ForeignKey(
         to=User,
-        related_name='following',
+        related_name='subscribing',
         on_delete=models.CASCADE,
     )
 

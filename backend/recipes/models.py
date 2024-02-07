@@ -151,9 +151,9 @@ class Favorite(models.Model):
 
     user = models.ForeignKey(
         User,
-        related_name='favorites',
         verbose_name='Пользователь',
-        on_delete=models.CASCADE
+        on_delete=models.CASCADE,
+        related_name='favorites'
     )
 
     class Meta:
@@ -171,19 +171,19 @@ class Favorite(models.Model):
         return f'{self.user} favorite {self.recipe}'
 
 
-class ShoppingList(models.Model):
+class ShoppingCart(models.Model):
     """Model for recipes in shopping list"""
 
     recipe = models.ForeignKey(
         Recipe,
-        related_name='shopping_recipe',
+        related_name='shopping_cart',
         verbose_name='Рецепт в листе покупок',
         on_delete=models.CASCADE
     )
 
     user = models.ForeignKey(
         User,
-        related_name='shopping',
+        related_name='shopping_cart',
         verbose_name='Пользователь',
         on_delete=models.CASCADE
     )
@@ -200,4 +200,4 @@ class ShoppingList(models.Model):
         ]
 
     def __str__(self):
-        return f"{self.recipe} is in {self.user}s shopping list"
+        return f"{self.recipe} is in {self.user}s shopping cart"

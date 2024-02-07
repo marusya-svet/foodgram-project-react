@@ -4,7 +4,7 @@ from .models import (
     Ingredient,
     Tag,
     Recipe,
-    ShoppingList,
+    ShoppingCart,
     Favorite,
     IngredientInRecipe
 )
@@ -47,8 +47,8 @@ class TagAdmin(admin.ModelAdmin):
     list_display = ('name', 'color_hex', 'slug')
 
 
-@admin.register(ShoppingList)
-class ShoppingListAdmin(admin.ModelAdmin):
+@admin.register(ShoppingCart)
+class ShoppingCartAdmin(admin.ModelAdmin):
     list_display = ('recipe', 'user')
 
 
