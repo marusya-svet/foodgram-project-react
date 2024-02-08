@@ -142,18 +142,18 @@ class IngredientInRecipe(models.Model):
 class Favorite(models.Model):
     """Model for adding recipe to favorites"""
 
-    recipe = models.ForeignKey(
-        Recipe,
-        related_name='favorites',
-        verbose_name='Избранный рецепт',
-        on_delete=models.CASCADE
-    )
-
     user = models.ForeignKey(
         User,
         verbose_name='Пользователь',
         on_delete=models.CASCADE,
         related_name='favorites'
+    )
+
+    recipe = models.ForeignKey(
+        Recipe,
+        related_name='favorites',
+        verbose_name='Избранный рецепт',
+        on_delete=models.CASCADE
     )
 
     class Meta:
@@ -162,7 +162,7 @@ class Favorite(models.Model):
         ordering = ['id']
         models.constraints = [
             models.UniqueConstraint(
-                fields=['recipe', 'user'],
+                fields=['user', 'recipe'],
                 name='user_favorite_recipe'
             )
         ]
@@ -174,17 +174,16 @@ class Favorite(models.Model):
 class ShoppingCart(models.Model):
     """Model for recipes in shopping list"""
 
-    recipe = models.ForeignKey(
-        Recipe,
-        related_name='shopping_cart',
-        verbose_name='Рецепт в листе покупок',
-        on_delete=models.CASCADE
-    )
-
     user = models.ForeignKey(
         User,
         related_name='shopping_cart',
         verbose_name='Пользователь',
+        on_delete=models.CASCADE
+    )
+    recipe = models.ForeignKey(
+        Recipe,
+        related_name='shopping_cart',
+        verbose_name='Рецепт в листе покупок',
         on_delete=models.CASCADE
     )
 
@@ -194,7 +193,7 @@ class ShoppingCart(models.Model):
         ordering = ['id']
         models.constraints = [
             models.UniqueConstraint(
-                fields=['recipe', 'user'],
+                fields=['user', 'recipe'],
                 name='user_shopping_recipe'
             )
         ]

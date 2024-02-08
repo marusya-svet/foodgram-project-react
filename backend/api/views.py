@@ -60,7 +60,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
             return RecipeReadSerializer
         return RecipeCreateSerializer
 
-    def add_obj(self, model: object, user, pk):
+    def add_to(self, model, user, pk):
         if model.objects.filter(user=user, recipe__id=pk).exists():
             return Response({
                 'error': 'Recipe is already added to the list'
@@ -70,7 +70,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
         serializer = ShortRecipeSerializer(recipe)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
-    def delete_obj(self, model: object, user, pk):
+    def delete_from(self, model, user, pk):
         obj = model.objects.filter(user=user, recipe__id=pk)
         if obj.exists():
             obj.delete()
@@ -83,9 +83,9 @@ class RecipeViewSet(viewsets.ModelViewSet):
         permission_classes=(IsAuthenticated,))
     def favorite(self, request, pk):
         if request.method == 'POST':
-            return self.add_obj(Favorite, request.user, pk)
+            return self.add_to(Favorite, request.user, pk)
         else:
-            return self.delete_obj(Favorite, request.user, pk)
+            return self.delete_from(Favorite, request.user, pk)
 
     @action(
         detail=True,
@@ -93,9 +93,9 @@ class RecipeViewSet(viewsets.ModelViewSet):
         permission_classes=(IsAuthenticated,))
     def shopping_cart(self, request, pk):
         if request.method == 'POST':
-            return self.add_obj(ShoppingCart, request.user, pk)
+            return self.add_to(ShoppingCart, request.user, pk)
         else:
-            return self.delete_obj(ShoppingCart, request.user, pk)
+            return self.delete_from(ShoppingCart, request.user, pk)
 
     @action(detail=False, permission_classes=(IsAuthenticated,))
     def download_shopping_cart(self, request):

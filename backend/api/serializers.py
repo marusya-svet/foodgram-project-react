@@ -116,24 +116,22 @@ class RecipeReadSerializer(serializers.ModelSerializer):
         ingredients = recipe.ingredients.values(
             'id',
             'name',
-            'measurement_unit',
+            'measure_unit',
             amount=F('ingredientinrecipe__amount')
         )
         return ingredients
 
     def get_is_in_favorite(self, obj):
-        request = self.context.get('request')
-        if request.user.is_anonymous:
+        user = self.context.get('request').user
+        if user.is_anonymous:
             return False
-        return Recipe.objects.filter(favorites__user=request.user, id=obj.id)
+        return Recipe.objects.filter(favorites__user=user, id=obj.id).exists()
 
     def get_is_in_shopping_list(self, obj):
-        request = self.context.get('request')
-        if request.user.is_anonymous:
+        user = self.context.get('request').user
+        if user.is_anonymous:
             return False
-        return Recipe.objects.filter(
-            shopping_cart__user=request.user, id=obj.id
-        )
+        return Recipe.objects.filter(shopping_cart__user=user, id=obj.id).exists()
 
 
 class RecipeCreateSerializer(serializers.ModelSerializer):
@@ -169,18 +167,14 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
             )
         return data
 
-    @staticmethod
-    def create_ingredients(recipe, ingredients):
-        ingredient_list = []
-        for ingredient_data in ingredients:
-            ingredient_list.append(
-                IngredientInRecipe(
-                    ingredient=ingredient_data.pop('id'),
-                    amount=ingredient_data.pop('amount'),
-                    recipe=recipe,
-                )
-            )
-        IngredientInRecipe.objects.bulk_create(ingredient_list)
+    def create_ingredients(self, recipe, ingredients):
+        IngredientInRecipe.objects.bulk_create(
+            [IngredientInRecipe(
+                ingredient=Ingredient.objects.get(id=ingredient['id']),
+                recipe=recipe,
+                amount=ingredient['amount']
+            ) for ingredient in ingredients]
+        )
 
     @atomic
     def create(self, validated_data):
@@ -188,7 +182,7 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
         ingredients = validated_data.pop('ingredients')
         recipe = Recipe.objects.create(**validated_data)
         recipe.tags.set(tags)
-        self.create_ingredients(recipe, ingredients)
+        self.create_ingredients(recipe=recipe, ingredients=ingredients)
         return recipe
 
     @atomic
@@ -199,11 +193,6 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
         ingredients = validated_data.pop('ingredients')
         self.create_ingredients(instance, ingredients)
         return super().update(instance, validated_data)
-
-    def to_representation(self, instance):
-        request = self.context.get('request')
-        context = {'request': request}
-        return RecipeReadSerializer(instance, context=context).data
 
 
 class SubscribeSerializer(serializers.ModelSerializer):
