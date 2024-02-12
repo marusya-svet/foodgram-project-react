@@ -75,7 +75,8 @@ class RecipeViewSet(viewsets.ModelViewSet):
         if obj.exists():
             obj.delete()
             return Response(status=status.HTTP_204_NO_CONTENT)
-        return Response({'erroor': 'Рецепт уже удален'}, status=status.HTTP_400_BAD_REQUEST)
+        return Response({'erroor': 'Рецепт уже удален'},
+                        status=status.HTTP_400_BAD_REQUEST)
 
     @action(
         detail=True,
@@ -99,22 +100,23 @@ class RecipeViewSet(viewsets.ModelViewSet):
 
     @action(detail=False, permission_classes=(IsAuthenticated,))
     def download_shopping_cart(self, request):
-        ingredient_list = "Cписок покупок:"
+        shopping_list = 'Купить:'
         ingredients = IngredientInRecipe.objects.filter(
             recipe__shopping_cart__user=request.user
-        ).values(
-            'ingredient__name', 'ingredient__measurement_unit'
+        ).order_by('ingredient__name').values(
+            'ingredient__name',
+            'ingredient__measurement_unit'
         ).annotate(amount=Sum('amount'))
-        for num, i in enumerate(ingredients):
-            ingredient_list += (
-                f"\n{i['ingredient__name']} - "
-                f"{i['amount']} {i['ingredient__measurement_unit']}"
+
+        for ingredient in ingredients:
+            shopping_list += (
+                f"\n{ingredient['ingredient__name']}"
+                f"({ingredient['ingredient__measurement_unit']}) - "
+                f"\n{ingredient['amount']}"
             )
-            if num < ingredients.count() - 1:
-                ingredient_list += ', '
-        file = 'shopping_list'
-        response = HttpResponse(ingredient_list, 'Content-Type: application/pdf')
-        response['Content-Disposition'] = f'attachment; filename="{file}.pdf"'
+            file = 'shopping_list.txt'
+            response = HttpResponse(shopping_list, content_type='text/plain')
+            response['Content-Disposition'] = f"attachment; filename='{file}.txt'"
         return response
 
 
