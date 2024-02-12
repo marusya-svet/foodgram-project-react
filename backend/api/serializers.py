@@ -13,7 +13,9 @@ from recipes.models import (
     Recipe,
     IngredientInRecipe,
     Ingredient,
-    Tag)
+    Tag,
+    Favorite,
+    ShoppingCart)
 from users.models import Subscribe
 
 MIN_INGREDIENT_AMOUNT = 1
@@ -64,7 +66,7 @@ class IngredientSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Ingredient
-        fields = ['id', 'name', 'measure_unit']
+        fields = ['id', 'name', 'measurement_unit']
 
 
 class TagSerializer(serializers.ModelSerializer):
@@ -72,7 +74,7 @@ class TagSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Tag
-        fields = ['id', 'name', 'color_hex', 'slug']
+        fields = ['id', 'name', 'color', 'slug']
 
 
 class IngredientInRecipeSerializer(serializers.ModelSerializer):
@@ -97,8 +99,8 @@ class RecipeReadSerializer(serializers.ModelSerializer):
     tags = TagSerializer(read_only=True, many=True)
     author = CustomUserSerializer(read_only=True)
     ingredients = serializers.SerializerMethodField()
-    is_in_favorite = serializers.SerializerMethodField()
-    is_in_shopping_list = serializers.SerializerMethodField()
+    is_favorited = serializers.SerializerMethodField()
+    is_in_shopping_cart = serializers.SerializerMethodField()
     image = Base64ImageField(required=False)
     cooking_time = serializers.IntegerField(
         min_value=MIN_COOKING_TIME,
@@ -108,7 +110,7 @@ class RecipeReadSerializer(serializers.ModelSerializer):
     class Meta:
         model = Recipe
         fields = ('id', 'author', 'tags', 'ingredients',
-                  'is_in_favorite', 'is_in_shopping_list',
+                  'is_favorited', 'is_in_shopping_cart',
                   'name', 'text', 'image', 'cooking_time')
 
     def get_ingredients(self, obj):
@@ -116,22 +118,22 @@ class RecipeReadSerializer(serializers.ModelSerializer):
         ingredients = recipe.ingredients.values(
             'id',
             'name',
-            'measure_unit',
+            'measurement_unit',
             amount=F('ingredientinrecipe__amount')
         )
         return ingredients
 
-    def get_is_in_favorite(self, obj):
+    def get_is_favorited(self, obj):
         user = self.context.get('request').user
         if user.is_anonymous:
             return False
-        return Recipe.objects.filter(favorites__user=user, id=obj.id).exists()
+        return Favorite.objects.filter(user=user, recipe=obj).exists()
 
-    def get_is_in_shopping_list(self, obj):
+    def get_is_in_shopping_cart(self, obj):
         user = self.context.get('request').user
         if user.is_anonymous:
             return False
-        return Recipe.objects.filter(shopping_cart__user=user, id=obj.id).exists()
+        return ShoppingCart.objects.filter(user=user, recipe=obj).exists()
 
 
 class RecipeCreateSerializer(serializers.ModelSerializer):
@@ -193,6 +195,11 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
         ingredients = validated_data.pop('ingredients')
         self.create_ingredients(instance, ingredients)
         return super().update(instance, validated_data)
+
+    def to_representation(self, instance):
+        request = self.context.get('request')
+        context = {'request': request}
+        return RecipeReadSerializer(instance, context=context).data
 
 
 class SubscribeSerializer(serializers.ModelSerializer):

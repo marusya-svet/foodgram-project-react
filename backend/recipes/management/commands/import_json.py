@@ -25,11 +25,11 @@ class Command(BaseCommand):
                 for ingredient in data:
                     try:
                         Ingredient.objects.create(name=ingredient["name"],
-                                                  measure_unit=ingredient[
+                                                  measurement_unit=ingredient[
                                                       "measurement_unit"])
                     except IntegrityError:
                         print(f'Ингридиет {ingredient["name"]} '
-                              f'{ingredient["measure_unit"]} '
+                              f'{ingredient["measurement_unit"]} '
                               f'уже есть в базе')
 
         except FileNotFoundError:

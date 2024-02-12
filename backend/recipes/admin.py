@@ -19,7 +19,7 @@ class RecipeIngredientInline(TabularInline):
 class IngredientAdmin(admin.ModelAdmin):
     list_display = (
         'name',
-        'measure_unit',
+        'measurement_unit',
     )
     list_filter = ('name',)
 
@@ -44,7 +44,7 @@ class RecipeAdmin(admin.ModelAdmin):
 
 @admin.register(Tag)
 class TagAdmin(admin.ModelAdmin):
-    list_display = ('name', 'color_hex', 'slug')
+    list_display = ('name', 'color', 'slug')
 
 
 @admin.register(ShoppingCart)

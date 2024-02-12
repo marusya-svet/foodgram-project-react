@@ -9,7 +9,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 SECRET_KEY = os.getenv('SECRET_KEY', 'svet')
 
-DEBUG = True
+DEBUG = (os.getenv('DEBUG', 'false') == 'true')
 
 ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', '').split(',')
 
@@ -120,7 +120,7 @@ DJOSER = {
         'user_create': 'api.serializers.CustomUserCreateSerializer',
     },
     'PERMISSIONS': {
-        'user': ('rest_framework.permissions.IsAuthenticated',),
+        'user': ('djoser.permissions.CurrentUserOrAdminOrReadOnly',),
         'user_list': ('rest_framework.permissions.AllowAny',),
         'recipe': ('rest_framework.permissions.AllowAny',),
         'recipe_list': ('rest_framework.permissions.AllowAny',)

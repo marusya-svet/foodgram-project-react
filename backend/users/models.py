@@ -25,13 +25,15 @@ class Subscribe(models.Model):
     """Follow model"""
 
     user = models.ForeignKey(
-        to=User,
+        User,
         related_name='subscriber',
+        verbose_name='Подписчик',
         on_delete=models.CASCADE
     )
     author = models.ForeignKey(
-        to=User,
+        User,
         related_name='subscribing',
+        verbose_name='Автор',
         on_delete=models.CASCADE,
     )
 
