@@ -49,8 +49,8 @@ sudo docker compose up -d
 
 ## Примеры запросов API
 
-Add recipe: POST `api/recipes/`
-View recipe: GET `api/recipes/{recipe_id}`
+- Add recipe: POST `api/recipes/`
+- View recipe: GET `api/recipes/{recipe_id}`
 
 ### Author
 *Maria Svetlichnaya*
