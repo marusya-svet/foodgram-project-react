@@ -34,7 +34,11 @@ ALLOWED_HOSTS=(your hosts)
 - Create superuser in backend directory 
 ```
 python manage.py createsuperuser
-``` 
+```
+- Also in backend directory import ingredients:
+```
+python manage.py import_json
+```
 - Download Docker Compose:
 ```
 sudo apt update
