@@ -8,7 +8,15 @@ From the shopping list you can download the list of necessary groceries
 - Django 3.2
 - Nginx
 - Django REST framework 3.12.4
-- Docker
+- Dockeк
+- JSON
+- YAML
+- React
+- Nginx
+- PostgreSQL
+- Gunicorn
+- JWT 
+- Postman
 
 ### Run project in dev
 - Install and activate virtual environment
