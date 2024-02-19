@@ -1,6 +1,6 @@
 # FOODGRAM_PROJECT
 Social network for bloggers and cooks!
-Here you can post your recipes, follow other cooks, add recipes to the favorites list and to shopping list.
+Here you can post your recipes with photos, follow other cooks, add recipes to the favorites list and to shopping list.
 From the shopping list you can download the list of necessary groceries 
 
 ### Tecnologies
@@ -8,11 +8,9 @@ From the shopping list you can download the list of necessary groceries
 - Django 3.2
 - Nginx
 - Django REST framework 3.12.4
-- Dockeк
+- Docker
 - JSON
 - YAML
-- React
-- Nginx
 - PostgreSQL
 - Gunicorn
 - JWT 
